@@ -19,7 +19,7 @@ eligible_participants <- mnh02 %>%
   # Remove records with invalid screening dates (not missing/refused/etc.)
   filter(!scrn_obsstdat %in% as_date(c("1907-07-07", "1905-05-05", "1906-06-06", "1909-09-09"))) %>% 
   # Select only the relevant columns (optional)
-  select(scrnid, scrn_obsstdat, scrn_obsloc, scrn_fac_spfy_obsloc, scrn_othr_spfy_obsloc)
+  select(scrnid,momid,pregid, scrn_obsstdat)
 
 # View the first few rows of eligible participants
 head(eligible_participants)
