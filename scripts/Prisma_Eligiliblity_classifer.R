@@ -2,7 +2,7 @@
 library(tidyverse)
 library(lubridate) # for date handling
 
-# Assuming your dataset is named 'mnh02'
+# 'mnh02'
 eligible_participants <- mnh02 %>% 
   # Filter for participants who returned for screening (scrn_return == 1)
   filter(scrn_return == 1) %>% 
