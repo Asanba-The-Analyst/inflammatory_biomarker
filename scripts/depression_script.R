@@ -7,6 +7,23 @@
 # 5. Clinical recommendations
 
 # Load required packages --------------------------------------------------------
+
+mnh25 <- read.csv("data/mnh25.csv",check.names = FALSE)
+
+convert_names_to_lower <- function(dataset) {
+  names(dataset) <- tolower(names(dataset))
+  return(dataset)
+}
+
+
+# Example usage
+df <- convert_names_to_lower(mnh25)
+
+
+df <- df %>%
+  distinct(pregid, .keep_all = TRUE)
+
+
 if (!require(pacman)) install.packages("pacman")
 pacman::p_load(
   tidyverse,    # Data manipulation and visualization
@@ -20,7 +37,7 @@ pacman::p_load(
 # Data Preparation -------------------------------------------------------------
 
 # Convert variables to lowercase in the original data
-df <- df %>% rename_with(tolower)
+# df <- df %>% rename_with(tolower)
 
 # Create properly scored variables (0-3 scale typical for EPDS, adjusting for your Y/N format)
 # Note: Items 1 & 2 are positive and should be reverse scored

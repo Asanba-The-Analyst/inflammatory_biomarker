@@ -39,7 +39,7 @@ my_list <- list(
   "cbc_lbperf_19",
   "cbc_pct_pct_lborres"
 )
-my_list <- list(
+mn08-my_list <- list(
   "lft_lbperf_4",
   "tbilirubin_lborres",
   "lft_lbperf_5",
@@ -55,7 +55,7 @@ my_list <- list(
 )
 
 
-my_list <- list(
+mnh8 my_list <- list(
   "bgluc_lbtstdat",
   "bgluc_lbperf_1",
   "bgluc_pretest_mmoll_lborres",
@@ -69,15 +69,8 @@ my_list <- list(
   "hba1c_prcnt",
   "tb_backup_lborres"
 )
-
+#mnh08
 my_list <- list(
-  "bgluc_lbtstdat",
-  "bgluc_lbperf_1",
-  "bgluc_pretest_mmoll_lborres",
-  "bgluc_lbperf_2",
-  "bgluc_oral_1hr_mmoll_lborres",
-  "bgluc_lbperf_3",
-  "bgluc_oral_2hr_mmoll_lborres",
   "hba1c_lbtstdat",
   "hba1c_test_yn",
   "hba1c_lborres",
@@ -336,5 +329,36 @@ variables_list <- list(
   )
 )
 
-# Print the structure (optional)
-str(variables_list)
+mnh5_poc <- list(
+  malaria = c(
+    "malaria_poc_lbperf",    # Malaria test performed
+    "malaria_poc_lborres"    # Malaria test result
+  ),
+  hiv = c(
+    "hiv_poc_lbperf",        # HIV test performed
+    "hiv_poc_lborres"        # HIV test result
+  ),
+  syphilis = c(
+    "syph_poc_lbperf",       # Syphilis test performed
+    "syph_poc_lborres"       # Syphilis test result
+  ),
+  hepatitis_b = c(
+    "hbv_poc_lbperf",        # Hepatitis B test performed
+    "hbv_poc_lborres"        # Hepatitis B test result
+  ),
+  hepatitis_c = c(
+    "hcv_poc_lbperf",        # Hepatitis C test performed
+    "hcv_poc_lborres"        # Hepatitis C test result
+  ),
+  glucose = c(
+    "bgluc_poc_lbperf",      # Glucose test performed
+    "bgluc_poc_mmoll_lborres" # Glucose result (mmol/L)
+  ),
+  covid = c(
+    "covid_poc_lbperf",      # COVID-19 test performed
+    "covid_poc_lborres"      # COVID-19 test result
+  )
+)
+
+# Print structure
+str(mnh5_poc)

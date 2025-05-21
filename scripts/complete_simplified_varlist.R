@@ -87,4 +87,34 @@ variables_list <- list(
 )
 
 # Print the structure (optional)
-str(variables_list)
+raw = c(
+  "cbc_neu_fcc_lborres",  # Neutrophils
+  "cbc_lymph_fcc_lborres",  # Lymphocytes
+  "cbc_mono_fcc_lborres",  # Monocytes
+  "cbc_plate_lborres",  # Platelets
+  "cbc_wbc_lborres",  # Total WBC count
+  "lb_remapp3_tri",  # ReMAPP-specific trimester
+  "crp_lborres",  # C-reactive protein (mg/L)
+  "agp_lborres" , # Alpha-1 acid glycoprotein (g/L)
+  "malbl_lbperf_1",  # Test performed
+  "malbl_lborres",  # Results (Positive/Negative)
+  "malbl_tk_ct_1",  # Species-specific counts (e.g., P. falciparum)
+  "malbl_tn_ct_1" ,
+  "placmal_lbperf_1",  # Test performed
+  "placmal_lborres",  # Results (Acute/Chronic/Past infection)
+  "ua_prot_lborres",  # Proteinuria
+  "ua_leuk_lborres",  # Leukocytes
+  "ua_nitrite_lborres",  # Nitrites
+  "rbc_lbperf_1",  # Test performed
+  "rbc_sickle_lborres",  # Results (Normal/Disease present)
+  "rbc_lbperf_2",  # Test performed
+  "rbc_thala_lborres",  # Results (Normal/Abnormal)
+  "rbc_lbperf_3",  # Test performed
+  "rbc_g6pd_lborres",  # Enzyme activity
+  "bgluc_pretest_mmoll_lborres",  # Fasting glucose
+  "bgluc_oral_1hr_mmoll_lborres",  # 1hr Oral glucose tolerance test
+  "bgluc_oral_2hr_mmoll_lborres",  # 2hr Oral glucose tolerance test
+  "hba1c_prcnt", # HbA1c
+  "tbilirubin_lborres"  # Total bilirubin (hyperbilirubinemia)
+)
+  
