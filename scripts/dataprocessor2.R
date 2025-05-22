@@ -52,7 +52,7 @@ check_duplicate <- function(data){
 
 
 #checking for duplicates in the columns
-check_duplicate(data)
+#check_duplicate(data)
 
 
 convert_names_to_lower <- function(dataset) {
@@ -80,6 +80,8 @@ mnh00 <- mnh00 %>% filter(pregid %in%eli_ids)
 mnh01 <- mnh01 %>% filter(pregid %in%eli_ids)
 
 mnh02 <- mnh02 %>% filter(pregid %in%eli_ids)
+
+mnh08 <- mnh08 %>% filter(pregid %in%eli_ids)
 
 mnh00_var <- c("momid","pregid","estimated_age", "brthdat","school_scorres")
 

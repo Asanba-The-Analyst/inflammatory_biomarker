@@ -4,20 +4,32 @@ library(lubridate)
 library(tidyverse)
 
 
+
+mnh00_unid <- mnh00 %>%
+  distinct(pregid, .keep_all = TRUE)
+
+
 mnh01_unid <- mnh01 %>%
   distinct(pregid, .keep_all = TRUE)
 
 mnh08_unid <- mnh08 %>%
   distinct(pregid, type_visit,  .keep_all = TRUE)
 
+
 dat <- master %>%left_join(mnh00_unid,by=c("momid","pregid"))
 
 mnh0_1 <- dat %>%left_join(mnh01_unid,by=c("momid","pregid"))
 
-data<- mnh0_1  %>%left_join(mnh08_unid,by=c("momid","pregid"))
+data<- mnh0_1  %>%left_join(mnh08,by=c("momid","pregid","type_visit"))
 
 
 df <- data
+
+df <- df %>%
+  mutate(
+    us_ohostdat = as.Date(us_ohostdat),
+    across(ends_with("_lbtstdat"), ~ as.Date(.x), .names = "{col}")  # Keeps original names
+  )
 
 # === Step 1: Calculate baseline GA in days ===
 df <- df %>%
@@ -57,7 +69,7 @@ process_lab_panel <- function(data, date_var, result_vars, panel_name) {
   }
   # Filter visits 1 to 5 and non-missing test dates
   df_panel <- data %>%
-    filter(type_visit %in% 1:5) %>%
+    filter(type_visit %in% 1:6) %>%
     filter(!is.na(.data[[date_var]])) %>%
     mutate(
       # Calculate GA in days at test date (only if ga_days_base and us_ohostdat exist)
@@ -83,7 +95,7 @@ process_lab_panel <- function(data, date_var, result_vars, panel_name) {
   }
   
   # Select relevant columns
-  select_vars <- c("subject_id", "type_visit", "trimester", date_var, valid_result_vars)
+  select_vars <- c("momid", "type_visit", "trimester", date_var, valid_result_vars)
   df_panel <- df_panel %>% select(any_of(select_vars))
   
   # Pivot longer to one row per test
@@ -129,7 +141,7 @@ hev_result_vars <- safe_vars(c("hev_lbperf_1", "hev_igm_lborres", "hev_lbperf_2"
 
 rbc_result_vars <- safe_vars(c("rbc_lbperf_1", "rbc_sickle_lborres", "rbc_lbperf_2", "rbc_thala_lborres", "rbc_lbperf_3"))
 
-ua_result_vars <- safe_vars(c("ua_dipstick", "ua_lbperf_1", "ua_prot_lborres", "ua_lbperf_2", "ua_leuk_lborres", "ua_lbperf_3", "ua_nitrite_lborres"))
+ua_result_vars <- safe_vars(c("ua_dipstick", "ua_prot_lborres",  "ua_leuk_lborres",  "ua_nitrite_lborres"))
 
 malaria_result_vars <- safe_vars(c("malbl_lbperf_1", "malbl_lborres", "malbl_tk_ct_1", "malbl_tn_ct_1", "placmal_lbperf_1", "placmal_lborres"))
 
@@ -142,6 +154,7 @@ bgluc_long <- process_lab_panel(df, "bgluc_lbtstdat", bgluc_result_vars, "Blood 
 tb_long <- process_lab_panel(df, "tb_lbtstdat", tb_result_vars, "TB")
 hev_long <- process_lab_panel(df, "hev_lbtstdat", hev_result_vars, "HEV")
 rbc_long <- process_lab_panel(df, "rbc_sickle_lbtstdat", rbc_result_vars, "RBC")
+
 ua_long <- process_lab_panel(df, "ua_lbtstdat", ua_result_vars, "Urinalysis")
 
 # HbA1c panel - check if date variable exists, else skip
@@ -154,20 +167,20 @@ if("hba1c_lbtstdat" %in% colnames(df)) {
 # Malaria panel (no date) - just filter visits and reshape
 malaria_long <- df %>%
   filter(type_visit %in% 1:5) %>%
-  select(subject_id, type_visit, any_of(malaria_result_vars)) %>%
+  select(momid, type_visit, any_of(malaria_result_vars)) %>%
   mutate(panel = "Malaria") %>%
   pivot_longer(cols = all_of(malaria_result_vars), names_to = "test_name", values_to = "test_result")
 
 # Inflammatory markers (no dates)
 inflammatory_long <- df %>%
   filter(type_visit %in% 1:5) %>%
-  select(subject_id, type_visit, any_of(inflammatory_vars)) %>%
+  select(momid, type_visit, any_of(inflammatory_vars)) %>%
   mutate(panel = "Inflammatory") %>%
   pivot_longer(cols = all_of(inflammatory_vars), names_to = "test_name", values_to = "test_result")
 
 # Combine all long dataframes safely
 all_labs_long <- bind_rows(
-  cbc_long, lft_long, bgluc_long, tb_long, hev_long, rbc_long, ua_long,
+  cbc_long, lft_long, bgluc_long, tb_long, hev_long, rbc_long,
   hba1c_long, malaria_long, inflammatory_long
 ) %>%
   mutate(trimester = if_else(is.na(trimester), NA_character_, trimester))
@@ -187,5 +200,5 @@ if ("cbc_wbc_lborres" %in% all_labs_long$test_name) {
     )
 }
 
-# Now you have a robust, tidy long dataset ready for further analysis.
+
 
