@@ -9,6 +9,8 @@ library(skimr)
 
 #loading the datasets
 
+master<- read_stata("D:/Mu_biomaker/inflammatory_biomarker/data/big.dta")
+
 mnh00 <- read.csv("data/mnh00.csv",check.names = FALSE)
 mnh01 <- read.csv("data/mnh01.csv",check.names = FALSE)
 mnh02 <- read.csv("data/mnh02.csv",check.names = FALSE)
@@ -20,7 +22,7 @@ mnh09 <- read.csv("data/mnh09.csv",check.names = FALSE)
 mnh11<- read.csv("data/mnh11.csv",check.names = FALSE)
 mnh25 <- read.csv("data/mnh25.csv",check.names = FALSE)
 
-master <- read.csv("data/eligible_IDs.csv")
+#master <- read.csv("data/eligible_IDs.csv")
 
 
 # checking for datasets with visit types
@@ -33,7 +35,7 @@ check_variable_existence <- function(datasets, variable) {
     }
   }
 }
-
+mnh01$us_ga_wks_age_fts1
 
 datasets <- list(mnh00 = mnh00,mnh01 = mnh01,mnh02 = mnh02,mnh03 = mnh03,mnh04 = mnh04,mnh06 = mnh06,mnh08 = mnh08,mnh09 = mnh09, mnh11 = mnh11,  mnh25 = mnh25)
 
@@ -85,9 +87,9 @@ mnh09 <- mnh09 %>%
 
 mnh11 <- mnh11 %>%
   distinct(pregid, .keep_all = TRUE)
-
-mnh25_unid <- mnh25 %>%
-  distinct(pregid, .keep_all = TRUE)
+# 
+# mnh25_unid <- mnh25 %>%
+#   distinct(pregid, .keep_all = TRUE)
 
 mnh00_var <- c("momid","pregid","estimated_age", "brthdat","school_scorres")
 
@@ -103,8 +105,8 @@ mnh02 <-mnh02[,c("momid","pregid","scrn_obsstdat")]
 
 
 mnh03_variables <- c(
-  "momid", "pregid", "mat_vital_mnh03", 
-  "marital_scorres", "house_occ_tot_fcorres", "ext_wall_fcorres", 
+  "momid", "pregid", "marital_scorres","job_scorres","cethnic",
+   "house_occ_tot_fcorres", "ext_wall_fcorres", 
   "floor_fcorres", "roof_fcorres", "electricity_fcorres", 
   "solar_fcorres", "internet_fcorres", "landline_fcorres", 
   "mobile_fcorres", "mobile_access_fcorres", "radio_fcorres", 
@@ -124,14 +126,16 @@ mnh03_variables <- c(
   "livestock_fcorres", "cattle_fcorres", "goat_fcorres", 
   "sheep_fcorres", "poultry_fcorres", "pig_fcorres", 
   "donkey_fcorres", "horse_fcorres", "animal_othr_fcorres", 
-  "job_scorres", "stove_fcorres"
+   "stove_fcorres"
 )
+
 
 
 mnh03 <- mnh03[,mnh03_variables]
 
 source("scripts/ses.R")
-mnh03 <-final_df
+
+mnh03 <- final_df %>% rename(Marita_status= marital_scorres) 
 
 mnh04_variables <- c(
   "pregid", "momid","type_visit",
@@ -141,6 +145,7 @@ mnh04_variables <- c(
 
 mnh04 <- mnh04[,mnh04_variables]
 
+mnh04 <- mnh04 %>% rename(Parity=ph_live_rporres)
 
 
 mnh06_var <- c("momid","pregid","type_visit",
@@ -220,6 +225,14 @@ lab_vars_with_dates <- c("momid", "pregid",
                          "ua_lbtstdat", "ua_lbperf_1", "ua_prot_lborres",
                          "ua_lbtstdat", "ua_lbperf_2", "ua_leuk_lborres",
                          "ua_lbtstdat", "ua_lbperf_3", "ua_nitrite_lborres",
+                         
+                         #Zika–Chikungunya–Dengue 
+                         "zcd_zikigm_lborres",
+                         "zcd_zikigg_lborres",
+                        "zcd_denigm_lborres",
+                         "zcd_denigg_lborres",
+                         "zcd_chkigm_lborres",
+                         "zcd_chkigg_lborres",
                          
                          # Malaria (assuming implicit date variable for consistency)
                          "malbl_lbperf_1", "malbl_lborres", "malbl_tk_ct_1", "malbl_tn_ct_1",
@@ -402,23 +415,6 @@ epds_variables <- c(
 mnh25<- mnh25[,epds_variables]
 
 
-
-## KEEPING ONLY THE UNIQUES PREG IDS
-mnh00_unid <- mnh00 %>%
-  distinct(pregid, .keep_all = TRUE)
-
-mnh02 <- mnh02 %>%
-  distinct(pregid, .keep_all = TRUE)
-
-mnh03 <- mnh03 %>%
-  distinct(pregid, .keep_all = TRUE)
+more <- mnh01 %>% filter(us_ga_wks_age_fts1 >=28)
 
 
-mnh09 <- mnh09 %>%
-  distinct(pregid, .keep_all = TRUE)
-
-mnh11 <- mnh11 %>%
-  distinct(pregid, .keep_all = TRUE)
-
-mnh25_unid <- mnh25 %>%
-  distinct(pregid, .keep_all = TRUE)

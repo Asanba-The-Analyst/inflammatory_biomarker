@@ -8,8 +8,7 @@ library(missMDA)  # For missing value imputation
 
 df<-mnh03
 
-mnh03_variables <- c(
-  "momid", "pregid", 
+mnh03_variables <- c( "momid","pregid", "job_scorres","cethnic",
   "marital_scorres", "house_occ_tot_fcorres", "ext_wall_fcorres", 
   "floor_fcorres", "roof_fcorres", "electricity_fcorres", 
   "solar_fcorres", "internet_fcorres", "landline_fcorres", 
@@ -28,14 +27,12 @@ mnh03_variables <- c(
   "livestock_fcorres", "cattle_fcorres", "goat_fcorres", 
   "sheep_fcorres", "poultry_fcorres", "pig_fcorres", 
   "donkey_fcorres", "horse_fcorres", "animal_othr_fcorres", 
-  "job_scorres", "stove_fcorres"
+  "stove_fcorres"
 )
 
 df <- mnh03[,mnh03_variables]
 
-#"house_occ_tot_fcorres", "ext_wall_fcorres", 
-#"floor_fcorres", "roof_fcorres", "own_rent_scorres", "animal_othr_fcorres", 
-#"job_scorres", "stove_fcorres","house_rooms_fcorres"
+
 ses_vars <- c( "electricity_fcorres", 
               "solar_fcorres", "internet_fcorres", "landline_fcorres", 
               "mobile_fcorres", "mobile_access_fcorres", "radio_fcorres", 
@@ -69,12 +66,10 @@ df <- df %>%
 
 # Select relevant SES/wealth indicators
 
-
 # Drop rows with NA in any SES variable or impute as needed
 df_clean <- df %>% 
-  select(momid, pregid, all_of(ses_vars)) %>%
+  select(momid, pregid,job_scorres,marital_scorres,cethnic, all_of(ses_vars)) %>%
   drop_na()
-
 
 
 # 1. Remove problematic variables (zero-variance and near-zero variance)
@@ -114,7 +109,6 @@ df_clean <- df_clean %>%
   )
 
 # Final output with IDs, wealth index, and quintile
-final_df <- df_clean %>% select(momid, pregid, wealth_index, ses_quintile)
+final_df <- df_clean %>% select(momid, pregid,cethnic,job_scorres,marital_scorres,wealth_index, ses_quintile)
 
-# View first rows
-#head(final_df)
+

@@ -521,4 +521,7 @@ data <- mnh0_11 %>%left_join(mnh25_unid,by=c("momid","pregid"))
 data <- data %>%
   distinct(pregid, .keep_all = TRUE)
 
+sample(data,50)
+
+
 write.csv(data,"data/processed_prisma.csv")
