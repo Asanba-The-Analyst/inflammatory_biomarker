@@ -9,7 +9,7 @@ library(skimr)
 
 #loading the datasets
 
-master<- read_stata("D:/Mu_biomaker/inflammatory_biomarker/data/big.dta")
+#master<- read_stata("D:/Mu_biomaker/inflammatory_biomarker/data/big.dta")
 
 mnh00 <- read.csv("data/mnh00.csv",check.names = FALSE)
 mnh01 <- read.csv("data/mnh01.csv",check.names = FALSE)
@@ -22,7 +22,7 @@ mnh09 <- read.csv("data/mnh09.csv",check.names = FALSE)
 mnh11<- read.csv("data/mnh11.csv",check.names = FALSE)
 mnh25 <- read.csv("data/mnh25.csv",check.names = FALSE)
 
-#master <- read.csv("data/eligible_IDs.csv")
+master <- read.csv("data/eligible_IDs.csv")
 
 
 # checking for datasets with visit types
@@ -35,7 +35,7 @@ check_variable_existence <- function(datasets, variable) {
     }
   }
 }
-mnh01$us_ga_wks_age_fts1
+#mnh01$us_ga_wks_age_fts1
 
 datasets <- list(mnh00 = mnh00,mnh01 = mnh01,mnh02 = mnh02,mnh03 = mnh03,mnh04 = mnh04,mnh06 = mnh06,mnh08 = mnh08,mnh09 = mnh09, mnh11 = mnh11,  mnh25 = mnh25)
 
@@ -72,7 +72,7 @@ mnh08 <- mnh08 %>% filter(pregid %in%eli_ids)
 
 
 ## KEEPING ONLY THE UNIQUES PREG IDS
-mnh00_unid <- mnh00 %>%
+mnh00 <- mnh00 %>%
   distinct(pregid, .keep_all = TRUE)
 
 mnh02 <- mnh02 %>%
@@ -100,8 +100,18 @@ mnh00 <- mnh00 %>% rename(momage=estimated_age)
 mnh01_var <- c("momid","pregid","type_visit","us_ohostdat","estimated_edd_scdat","us_ga_days_age_fts1","us_ga_wks_age_fts1")
 mnh01 <- mnh01[,mnh01_var]
 
+# mass<-master$momid
+# 
+# mnh01 <- mnh01 %>% filter(momid %in%mass) #5708
+# 
+# only <- mnh01 %>% filter(type_visit==1)
+# great<-only %>% filter(us_ga_wks_age_fts1>=28)
+
 
 mnh02 <-mnh02[,c("momid","pregid","scrn_obsstdat")] 
+
+
+
 
 
 mnh03_variables <- c(
@@ -134,6 +144,7 @@ mnh03_variables <- c(
 mnh03 <- mnh03[,mnh03_variables]
 
 source("scripts/ses.R")
+
 
 mnh03 <- final_df %>% rename(Marita_status= marital_scorres) 
 
@@ -227,6 +238,12 @@ lab_vars_with_dates <- c("momid", "pregid",
                          "ua_lbtstdat", "ua_lbperf_3", "ua_nitrite_lborres",
                          
                          #Zika–Chikungunya–Dengue 
+                         
+                         #performance checks
+                         "zcd_lbperf_1", "zcd_lbperf_2",
+                         "zcd_lbperf_3", "zcd_lbperf_4",
+                         "zcd_lbperf_5", "zcd_lbperf_6",
+                         #results
                          "zcd_zikigm_lborres",
                          "zcd_zikigg_lborres",
                         "zcd_denigm_lborres",
@@ -237,10 +254,19 @@ lab_vars_with_dates <- c("momid", "pregid",
                          # Malaria (assuming implicit date variable for consistency)
                          "malbl_lbperf_1", "malbl_lborres", "malbl_tk_ct_1", "malbl_tn_ct_1",
                          "placmal_lbperf_1", "placmal_lborres",
-                         
                          # Inflammatory Markers (no dates assigned)
-                         "crp_lborres",
-                         "agp_lborres"
+                         "crp_lborres","rbc_g6pd_lborres",
+                        #malaria parasites
+                         "agp_lborres",
+                          "malbl_stge_1", "malbl_tk_ct_1", "malbl_tk_wbc_1", "malbl_tn_ct_1", "malbl_tn_rbc_1",
+                          "malbl_stge_2", "malbl_tk_ct_2", "malbl_tk_wbc_2", "malbl_tn_ct_2", "malbl_tn_rbc_2",
+                          "malbl_stge_3", "malbl_tk_ct_3", "malbl_tk_wbc_3", "malbl_tn_ct_3", "malbl_tn_rbc_3",
+                          "malbl_stge_4", "malbl_tk_ct_4", "malbl_tk_wbc_4", "malbl_tn_ct_4", "malbl_tn_rbc_4",
+                          "malbl_stge_5", "malbl_tk_ct_5", "malbl_tk_wbc_5", "malbl_tn_ct_5", "malbl_tn_rbc_5"
+                        
+                        
+                        
+                        
 )
 
 
@@ -343,7 +369,8 @@ all_variables <- c("momid", "pregid",
                    "rbc_thala_lborres",
                    "rbc_thala_lbtstdat",
                    "type_visit",
-                   "lb_remapp3_tri"
+                   "lb_remapp3_tri",
+                   "rbc_g6pd_lborres"
                    
 )
 
@@ -415,6 +442,4 @@ epds_variables <- c(
 mnh25<- mnh25[,epds_variables]
 
 
-more <- mnh01 %>% filter(us_ga_wks_age_fts1 >=28)
-
-
+#more <- mnh01 %>% filter(us_ga_wks_age_fts1 >=28)

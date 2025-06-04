@@ -1,0 +1,403 @@
+---
+title: "final_descriptives_musah"
+author: "ALEXANDER ANYAGRE"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+
+```{r}
+l_data <- read.csv("D:/Mu_biomaker/inflammatory_biomarker/data/long_data.csv")
+```
+
+
+```{r message=FALSE,error=FALSE,warning=FALSE}
+library(dplyr)
+library(tidyverse)
+library(gt)
+library(summarytools)
+library(gtsummary)
+```
+
+
+
+```{r}
+
+# trial %>% select(trt,age,grade,response) %>% 
+#   tbl_summary(by=trt) %>% add_p() %>% 
+#   add_overall() %>% 
+#   add_n() %>% 
+#   bold_labels()
+
+
+data <- l_data
+
+
+data <- data %>%
+  mutate(Age_group = factor(case_when(
+    momage <  20 ~ "15–19",
+    momage >= 20 & momage <= 29 ~ "20–29",
+    momage >= 30 & momage <= 39 ~ "30–39",
+    momage >= 40 ~ "40+"
+  ),levels = c("15–19", "20–29", "30–39", "40+")))
+
+
+data <- data %>%
+  mutate(Employment = factor(case_when(
+    job_scorres  %in% c(1, 2, 3, 4, 5, 6, 7, 8,88) ~ "employed",
+    job_scorres == 77 ~ "unemployed",
+    TRUE ~ NA_character_
+  ), levels = c("employed", "unemployed")))
+
+# Convert medlev variable into a factor
+data <- data %>%
+  mutate(Education = factor(case_when(
+    school_scorres == 1 ~ "ATTENDED SCHOOL",
+    school_scorres == 0 ~ "No",
+    TRUE ~ NA_character_
+  ), levels = c("ATTENDED SCHOOL", "No")))
+
+
+# Convert ethnic variable into factor
+data <- data %>%
+  mutate(ethnic = factor(case_when(
+    cethnic == 1 ~ "Akan/Bono", 
+    cethnic == 2 ~ "Mo",
+    cethnic %in% c(3, 4) ~ "Ewe/Ga-Adangme", 
+    cethnic %in% c(13, 88) ~ "Northern Tribe",
+    TRUE ~ NA_character_
+  ), levels = c("Akan/Bono", "Mo", "Ewe/Ga-Adangme", "Northern Tribe")))
+
+# Convert marital status variable into factor
+data <- data %>%
+  mutate(Marita_status = factor(case_when(
+    Marita_status == 1 ~ "Married",
+    Marita_status %in% c(2, 3, 4, 5) ~ "Single",
+    TRUE ~ as.character(Marita_status)
+  ), levels = c("Married", "Single")))
+
+
+demo_var <- c("Marita_status","ethnic","Education","Employment","momage")
+
+## DEMOGRAPHICS ANALYSIS
+demo <- data %>% distinct(pregid,.keep_all = TRUE)
+
+table(demo$Age_group)
+
+# Function to summarize categorical variables
+summarize_categorical <- function(demo, var, var_label) {
+  demo %>%
+    count(!!sym(var)) %>%
+    mutate(
+      percent = round(100 * n / sum(n), 1),
+      Indicator = var_label,
+      Category = !!sym(var),
+      Measure = paste0(n, " (", percent, "%)")
+    ) %>%
+    select(Indicator, Category, Measure)
+}
+
+# Apply to each categorical variable
+summary_list <- list(
+  summarize_categorical(demo, "Age_group", "Age"),
+  summarize_categorical(demo, "Education", "Education"),
+  summarize_categorical(demo, "Marita_status", "Marital Status"),
+  summarize_categorical(demo, "Employment", "Employment Status")
+  #summarize_categorical(df, "Residency", "Location/Residency")
+)
+
+# Combine all summaries
+cat_summary <- bind_rows(summary_list)
+
+# Summarize numeric variables (e.g., parity, gravidity)
+numeric_summary <-demo %>%
+  summarise(
+    `Parity (mean ± SD)` = paste0(round(mean(Parity, na.rm = TRUE), 1), " ± ", round(sd(Parity, na.rm = TRUE), 1))
+  ) %>%
+  pivot_longer(everything(), names_to = "Indicator", values_to = "Measure") %>%
+  mutate(Category = NA) %>%
+  select(Indicator, Category, Measure)
+
+# Combine categorical and numeric summaries
+final_summary <- bind_rows(cat_summary, numeric_summary)
+
+# View the result
+
+final_summary %>% stview()
+
+
+
+# trial %>% select(trt,age,grade,response) %>% 
+#demo %>% select(demo_var) %>% tbl_summary() 
+ 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Dono Touch
+
+```{r}
+
+
+# Define performance and result variable mappings
+test_mapping <- list(
+  "1" = list(name = "Zika IgM",        perf_var = "zcd_lbperf_1",    res_var = "zcd_zikigm_lborres",     res_labels = c("Negative", "Positive", "Inconclusive")),
+  "2" = list(name = "Zika IgG",        perf_var = "zcd_lbperf_2",    res_var = "zcd_zikigg_lborres",     res_labels = c("Negative", "Positive", "Inconclusive")),
+  "3" = list(name = "Dengue IgM",      perf_var = "zcd_lbperf_3",    res_var = "zcd_denigm_lborres",     res_labels = c("Negative", "Positive", "Inconclusive")),
+  "4" = list(name = "Dengue IgG",      perf_var = "zcd_lbperf_4",    res_var = "zcd_denigg_lborres",     res_labels = c("Negative", "Positive", "Inconclusive")),
+  "5" = list(name = "Chikungunya IgM", perf_var = "zcd_lbperf_5",    res_var = "zcd_chkigm_lborres",     res_labels = c("Negative", "Positive", "Inconclusive")),
+  "6" = list(name = "Chikungunya IgG", perf_var = "zcd_lbperf_6",    res_var = "zcd_chkigg_lborres",     res_labels = c("Negative", "Positive", "Inconclusive")),
+  
+  "7" = list(name = "Malaria POC",     perf_var = "malaria_poc_lbperf", res_var = "malaria_poc_lborres", res_labels = c("negative", "positive")),
+  "8" = list(name = "HIV POC",         perf_var = "hiv_poc_lbperf",     res_var = "hiv_poc_lborres",     res_labels = c("negative", "positive")),
+  "9" = list(name = "Syphilis POC",    perf_var = "syph_poc_lbperf",    res_var = "syph_poc_lborres",    res_labels = c("negative", "positive")),
+  "10"= list(name = "HBV POC",         perf_var = "hbv_poc_lbperf",     res_var = "hbv_poc_lborres",     res_labels = c("negative", "positive")),
+  "11"= list(name = "HCV POC",         perf_var = "hcv_poc_lbperf",     res_var = "hcv_poc_lborres",     res_labels = c("negative", "positive")),
+  "12"= list(name = "COVID POC",       perf_var = "covid_poc_lbperf",   res_var = "covid_poc_lborres",   res_labels = c("negative", "positive")),
+  
+  "13"= list(name = "Malaria Blood Slide",  perf_var = "malbl_lbperf_1", res_var = "malbl_lborres",      res_labels = c("negative", "positive")),
+  # "14"= list(name = "Placental Malaria",    perf_var = "placmal_lbperf_1", res_var = "placmal_lborres",  res_labels = c("not infected", "acute infection", "chronic infection", "past infection", "unknown")),
+  # 
+  "15"= list(name = "Sickle Cell",          perf_var = "rbc_lbperf_1", res_var = "rbc_sickle_lborres",   res_labels = c("normal", "sickle cell present")),
+  "16"= list(name = "Thalassemia",          perf_var = "rbc_lbperf_2", res_var = "rbc_thala_lborres",    res_labels = c("normal", "hemoglobinopathy present")),
+  
+  "17"= list(name = "Urine Protein",        perf_var = "ua_lbperf_1",  res_var = "ua_prot_lborres",      res_labels = c("none", "trace", "1+", "2+", "3+", "4+"), ordered = TRUE),
+  "18"= list(name = "Urine Leukocytes",     perf_var = "ua_lbperf_2",  res_var = "ua_leuk_lborres",      res_labels = c("none", "trace", "1+", "2+", "3+"), ordered = TRUE),
+  "19"= list(name = "Urine Nitrites",       perf_var = "ua_lbperf_3",  res_var = "ua_nitrite_lborres",   res_labels = c("negative", "positive"))
+)
+
+# Initialize
+test_tables <- list()
+clean_data <- l_data
+
+# One loop to handle recoding and table generation
+for (test in test_mapping) {
+  perf_var <- test$perf_var
+  res_var <- test$res_var
+  res_levels <- test$res_labels
+  res_ordered <- ifelse(is.null(test$ordered), FALSE, test$ordered)
+  
+  # Skip if missing variables
+  if (!all(c(perf_var, res_var) %in% names(clean_data))) next
+  
+  # Recode performance
+  clean_data[[perf_var]] <- factor(case_when(
+    clean_data[[perf_var]] == 1 ~ "Performed",
+    clean_data[[perf_var]] == 0 ~ "Not performed",
+    TRUE ~ "Unknown"
+  ), levels = c("Performed", "Not performed"))
+  
+  # Recode result
+  clean_data[[res_var]] <- factor(clean_data[[res_var]],
+                                  levels = seq_along(res_levels) - 1,
+                                  labels = res_levels,
+                                  ordered = res_ordered)
+  
+  # Generate gt table
+  test_data <- clean_data %>%
+    filter(.data[[perf_var]] == "Performed") %>%
+    count(.data[[res_var]]) %>%
+    mutate(percent = n / sum(n)) %>%
+    rename(Result = 1, Count = n, Percent = percent)
+  
+  test_tables[[test$name]] <- test_data %>%
+    gt() %>%
+    tab_header(
+      title = test$name,
+      subtitle = paste("Total performed:", sum(test_data$Count))
+    ) %>%
+    fmt_number(columns = Count, decimals = 0) %>%
+    fmt_percent(columns = Percent, decimals = 1) %>%
+    tab_options(table.width = "400px")
+}
+
+# Output
+
+
+
+
+```
+
+```{r}
+test_data <- clean_data %>%
+  filter(.data[[perf_var]] == "Performed") %>%
+  count(trimester, .data[[res_var]]) %>%
+  group_by(trimester) %>%
+  mutate(percent = n / sum(n)) %>%
+  ungroup() %>%
+  rename(Result = 2, Count = n, Percent = percent)
+
+test_table_wide <- test_data %>%
+  mutate(Percent = sprintf("%.1f%%", Percent * 100)) %>%
+  tidyr::unite(CountPercent, Count, Percent, sep = " (") %>%
+  mutate(CountPercent = paste0(CountPercent, ")")) %>%
+  tidyr::pivot_wider(
+    names_from = trimester,
+    values_from = CountPercent,
+    values_fill = "0 (0.0%)"
+  )
+
+test_tables[[test$name]] <- test_table_wide %>%
+  gt() %>%
+  tab_header(
+    title = test$name,
+    subtitle = paste("Total performed:", nrow(filter(clean_data, .data[[perf_var]] == "Performed")))
+  ) %>%
+  tab_options(table.width = "600px")
+
+
+```
+
+
+```{r}
+da <- read.csv("D:/Mu_biomaker/inflammatory_biomarker/data/mnh08.csv",check.names = FALSE)
+
+names(da) <- tolower(names(da))
+
+
+only <- da %>% filter(placmal_lbperf_1==1)
+
+only <- only %>%
+  mutate(placmal_lborres = factor(
+    case_when(
+      placmal_lborres == 0 ~ "Not Infected",
+      placmal_lborres == 1 ~ "Acute infection",
+      placmal_lborres == 2 ~ "Chronic infection",
+      placmal_lborres == 3 ~ "Past infection",
+      TRUE ~ "Unknown"
+    ),
+    levels = c("Not Infected", "Acute infection", "Chronic infection", "Past infection",
+               "Not applicable", "Missing", "Refused to answer", "Don't know", "Unknown"),
+    ordered = TRUE
+  ))
+
+cat(paste0("Total performed: ", nrow(only), "\n"))
+ only %>% select(placmal_lborres) %>% 
+  tbl_summary()
+```
+
+
+
+
+
+
+
+
+```{r}
+generate_test_tables_w <- function(data, test_mapping, group_var = NULL) {
+  test_tables <- list()
+  clean_data <- data
+
+  for (test in test_mapping) {
+    perf_var <- test$perf_var
+    res_var <- test$res_var
+    res_levels <- test$res_labels
+    res_ordered <- ifelse(is.null(test$ordered), FALSE, test$ordered)
+
+    if (!all(c(perf_var, res_var) %in% names(clean_data))) next
+
+    # Recode performance variable
+    clean_data[[perf_var]] <- factor(case_when(
+      clean_data[[perf_var]] == 1 ~ "Performed",
+      clean_data[[perf_var]] == 0 ~ "Not performed",
+      TRUE ~ "Unknown"
+    ), levels = c("Performed", "Not performed"))
+
+    # Recode result variable
+    clean_data[[res_var]] <- factor(
+      clean_data[[res_var]],
+      levels = seq_along(res_levels) - 1,
+      labels = res_levels,
+      ordered = res_ordered
+    )
+
+    # Filter only performed tests
+    filtered_data <- clean_data %>%
+      filter(.data[[perf_var]] == "Performed")
+
+    # Calculate total performed overall
+    total_all <- nrow(filtered_data)
+
+    if (!is.null(group_var) && group_var %in% names(filtered_data)) {
+      # Grouped analysis
+      test_data <- filtered_data %>%
+        count(!!sym(group_var), Result = .data[[res_var]]) %>%
+        group_by(!!sym(group_var)) %>%
+        mutate(Percent = n / sum(n)) %>%
+        ungroup() %>%
+        complete(!!sym(group_var), Result, fill = list(n = 0, Percent = 0)) %>%
+        mutate(Percent = sprintf("%.1f%%", Percent * 100)) %>%
+        unite(CountPercent, n, Percent, sep = " (") %>%
+        mutate(CountPercent = paste0(CountPercent, ")")) %>%
+        pivot_wider(names_from = !!sym(group_var), values_from = CountPercent, values_fill = "0 (0.0%)")
+
+      # Calculate totals by group
+      total_by_group <- filtered_data %>%
+        count(.data[[group_var]]) %>%
+        mutate(label = paste0(.data[[group_var]], ": ", n)) %>%
+        pull(label) %>%
+        paste(collapse = " | ")
+
+      subtitle_text <- paste0("Total performed: ", total_all, "\n", total_by_group)
+
+    } else {
+      # Overall analysis (no grouping)
+      test_data <- filtered_data %>%
+        count(Result = .data[[res_var]]) %>%
+        mutate(Percent = n / sum(n)) %>%
+        mutate(Percent = sprintf("%.1f%%", Percent * 100)) %>%
+        unite(CountPercent, n, Percent, sep = " (") %>%
+        mutate(CountPercent = paste0(CountPercent, ")"))
+
+      subtitle_text <- paste0("Total performed: ", total_all)
+    }
+
+    # Create gt table
+    test_tables[[test$name]] <- test_data %>%
+      gt() %>%
+      tab_header(
+        title = test$name,
+        subtitle = subtitle_text
+      ) %>%
+      tab_options(table.width = "600px")
+  }
+
+  return(test_tables)
+}
+
+
+```
+
+
+
+
+
+```{r}
+test_tables <- generate_test_tables_w(data = l_data, test_mapping = test_mapping, group_var = "trimester_label")
+```
+
+
+
+
+```{r results='asis', echo=FALSE}
+for (tbl in test_tables) {
+  print(tbl)
+}
+```
